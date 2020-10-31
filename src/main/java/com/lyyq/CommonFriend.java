@@ -22,17 +22,8 @@ public class CommonFriend {
 			return null;
 		}//no common friend
 		Set<String> result = new TreeSet<String>();
-		Set<String> l1 = null;Set<String> l2 = null;
-		if(list1.size() < list2.size()){
-			l1 = list1;
-			l2 = list2;
-		}
-		else {
-			l1 = list2;
-			l2 = list1;
-		}
-		for (String frnd : l1) {
-			if(l2.contains(frnd)){
+		for (String frnd : list1) {
+			if(list2.contains(frnd)){
 				result.add(frnd);
 			}
 		}
