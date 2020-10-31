@@ -122,12 +122,12 @@ public class CommonFriend {
     }
 
     Job job=Job.getInstance(conf);
-	job.setJarByClass(CommonFriend.class);
-	job.setMapperClass(MyMapper.class);
-	job.setReducerClass(MyReducer.class);
-	job.setMapOutputKeyClass(Text.class);
-	job.setMapOutputValueClass(Text.class);
-	job.setOutputKeyClass(Text.class);
+    job.setJarByClass(CommonFriend.class);
+    job.setMapperClass(MyMapper.class);
+    job.setReducerClass(MyReducer.class);
+    job.setMapOutputKeyClass(Text.class);
+    job.setMapOutputValueClass(Text.class);
+    job.setOutputKeyClass(Text.class);
     job.setOutputValueClass(Text.class);
     
     FileSystem fs = FileSystem.get(conf);
@@ -139,6 +139,6 @@ public class CommonFriend {
       FileInputFormat.addInputPath(job, new Path(otherArgs[i]));
     }
     FileOutputFormat.setOutputPath(job,outPath);
-	System.exit(job.waitForCompletion(true) ? 0 : 1);
-	}
+    System.exit(job.waitForCompletion(true) ? 0 : 1);
+  }
 }
