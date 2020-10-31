@@ -17,24 +17,23 @@ import org.apache.hadoop.util.GenericOptionsParser;
 
 public class CommonFriend {
 
-  public static Set<String> intersect(Set<String> set1, Set<String> set2){
-		if(set1==null || set2 == null){
+  public static Set<String> FindCommon(Set<String> list1, Set<String> list2){
+		if(list1==null || list2 == null){
 			return null;
-		}
+		}//no common friend
 		Set<String> result = new TreeSet<String>();
-		Set<String> small = null;
-		Set<String> big = null;
-		if(set1.size() < set2.size()){
-			small = set1;
-			big = set2;
+		Set<String> l1 = null;Set<String> l2 = null;
+		if(list1.size() < list2.size()){
+			l1 = list1;
+			l2 = list2;
 		}
 		else {
-			small = set2;
-			big = set1;
+			l1 = list2;
+			l2 = list1;
 		}
-		for (String String : small) {
-			if(big.contains(String)){
-				result.add(String);
+		for (String frnd : l1) {
+			if(l2.contains(frnd)){
+				result.add(frnd);
 			}
 		}
 		return result;
@@ -53,13 +52,13 @@ public class CommonFriend {
 				return;
 			}
 			outValue.set(input[1]);
-			String [] sz = input[1].split(" ");
-			for (String string : sz) {
-				if(input[0].compareTo(string) < 0){
-					outKey.set("([" + input[0] + ", " + string + "],");
+			String [] friend = input[1].split(" ");
+			for (String tofnd : friend) {
+				if(input[0].compareTo(tofnd) < 0){
+					outKey.set("([" + input[0] + ", " + tofnd + "],");
 				}
 				else {
-					outKey.set("([" + string + ", " + input[0] + "],");
+					outKey.set("([" + tofnd + ", " + input[0] + "],");
 				}
 				context.write(outKey, outValue);
 			}
@@ -69,47 +68,45 @@ public class CommonFriend {
 	//[200,100] 300 400
 	
 	static class MyReducer extends Reducer<Text, Text, Text, Text>{
-		//private Text outKey = new Text();
+
 		private Text outValue = new Text();
 		
 		@Override
 		protected void reduce(Text key, Iterable<Text> value, Context context)
 				throws IOException, InterruptedException {
-			int len = 0;
-			Set<String> set1 = new TreeSet<String>();
-			Set<String> set2 = new TreeSet<String>();
-			ArrayList<String> arrayList = new ArrayList<String>();
-			for (Text text : value) {
-				arrayList.add(text.toString());
-				len++;
+			int valnum = 0;
+			Set<String> list1 = new TreeSet<String>();
+			Set<String> list2 = new TreeSet<String>();
+			ArrayList<String> friendlist = new ArrayList<String>();
+			for (Text val : value) {
+				friendlist.add(val.toString());
+				valnum++;
 			}
-			if(len != 2){
-				return;
+			if(valnum != 2){
+				return;//one is the friendlist of 0,another one is the friendlist of 1;
 			}
-			String [] sz = arrayList.get(0).split(" ");
-			for (String s : sz) {
-				set1.add(s);
+			String [] frndlst1 = friendlist.get(0).trim().split(" ");
+			for (String s : frndlst1) {
+				list1.add(s);
 			}
-			sz = arrayList.get(1).trim().split(" ");
-			for (String s : sz) {
-				set2.add(s);
+			String [] frndlst2 = friendlist.get(1).trim().split(" ");
+			for (String s : frndlst2) {
+				list2.add(s);
 			}
-			Set<String> res = intersect(set1, set2);
-			if(res == null){
-				return;
+			Set<String> frndlst = FindCommon(list1, list2);
+
+			StringBuilder shared = new StringBuilder();
+			shared.append("[");
+			for (String s : frndlst) {
+				shared.append(s + ", ");
 			}
-			StringBuilder sb = new StringBuilder();
-			sb.append("[");
-			for (String s : res) {
-				sb.append(s + ", ");
+			String res = null;
+			if(shared.length() > 1){
+				res = shared.substring(0, shared.length()-2);//cut ouy "," & " "  
 			}
-			String substring = null;
-			if(sb.length() > 1){
-				substring = sb.substring(0, sb.length()-2);
-			}
-			substring+="])";
-			if(substring != null){
-				this.outValue.set(substring);
+			res+="])";
+			if(res != null){
+				this.outValue.set(res);
 				context.write(key, outValue);
 			}
 		}
@@ -120,7 +117,7 @@ public class CommonFriend {
 	Configuration conf = new Configuration();
 	String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
     if (otherArgs.length < 2) {
-      System.err.println("Usage: wordcount <in> [<in>...] <out>");
+      System.err.println("Usage: commmon <in> [<in>...] <out>");
       System.exit(2);
     }
 
@@ -142,6 +139,6 @@ public class CommonFriend {
       FileInputFormat.addInputPath(job, new Path(otherArgs[i]));
     }
     FileOutputFormat.setOutputPath(job,outPath);
-		System.exit(job.waitForCompletion(true) ? 0 : 1);
+	System.exit(job.waitForCompletion(true) ? 0 : 1);
 	}
 }
