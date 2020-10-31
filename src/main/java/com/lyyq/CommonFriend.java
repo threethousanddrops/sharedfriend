@@ -56,10 +56,10 @@ public class CommonFriend {
 			String [] sz = input[1].split(" ");
 			for (String string : sz) {
 				if(input[0].compareTo(string) < 0){
-					outKey.set("[" + input[0] + ", " + string + "]");
+					outKey.set("([" + input[0] + ", " + string + "]");
 				}
 				else {
-					outKey.set("[" + string + ", " + input[0] + "]");
+					outKey.set("([" + string + ", " + input[0] + "]");
 				}
 				context.write(outKey, outValue);
 			}
@@ -103,11 +103,11 @@ public class CommonFriend {
 			for (String s : res) {
 				sb.append(s + ", ");
 			}
-			sb.append("]");
 			String substring = null;
 			if(sb.length() > 1){
-				substring = sb.substring(0, sb.length());
+				substring = sb.substring(0, sb.length()-2);
 			}
+			substring+="])";
 			if(substring != null){
 				this.outValue.set(substring);
 				context.write(key, outValue);
