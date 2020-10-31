@@ -29,7 +29,7 @@ public class CommonFriend {
 		}
 		return result;
 	}
-	
+
 	
 	static class MyMapper extends Mapper<LongWritable, Text, Text, Text>{
 		private static Text outKey = new Text();
@@ -40,6 +40,7 @@ public class CommonFriend {
 				throws IOException, InterruptedException {
 			String [] input = value.toString().split(",");
 			if(input.length != 2){
+				System.err.println("irregular input");
 				return;
 			}
 			outValue.set(input[1]);
@@ -65,10 +66,10 @@ public class CommonFriend {
 		@Override
 		protected void reduce(Text key, Iterable<Text> value, Context context)
 				throws IOException, InterruptedException {
-			int valnum = 0;
 			Set<String> list1 = new TreeSet<String>();
 			Set<String> list2 = new TreeSet<String>();
 			ArrayList<String> friendlist = new ArrayList<String>();
+			int valnum = 0;
 			for (Text val : value) {
 				friendlist.add(val.toString());
 				valnum++;
@@ -93,13 +94,11 @@ public class CommonFriend {
 			}
 			String res = null;
 			if(shared.length() > 1){
-				res = shared.substring(0, shared.length()-2);//cut ouy "," & " "  
+				res = shared.substring(0, shared.length()-2);//cut out "," & " "  
 			}
 			res+="])";
-			if(res != null){
-				this.outValue.set(res);
-				context.write(key, outValue);
-			}
+		    this.outValue.set(res);
+			context.write(key, outValue);
 		}
 	}
  
@@ -113,12 +112,12 @@ public class CommonFriend {
     }
 
     Job job=Job.getInstance(conf);
-    job.setJarByClass(CommonFriend.class);
-    job.setMapperClass(MyMapper.class);
-    job.setReducerClass(MyReducer.class);
-    job.setMapOutputKeyClass(Text.class);
-    job.setMapOutputValueClass(Text.class);
-    job.setOutputKeyClass(Text.class);
+	job.setJarByClass(CommonFriend.class);
+	job.setMapperClass(MyMapper.class);
+	job.setReducerClass(MyReducer.class);
+	job.setMapOutputKeyClass(Text.class);
+	job.setMapOutputValueClass(Text.class);
+	job.setOutputKeyClass(Text.class);
     job.setOutputValueClass(Text.class);
     
     FileSystem fs = FileSystem.get(conf);
@@ -130,6 +129,6 @@ public class CommonFriend {
       FileInputFormat.addInputPath(job, new Path(otherArgs[i]));
     }
     FileOutputFormat.setOutputPath(job,outPath);
-    System.exit(job.waitForCompletion(true) ? 0 : 1);
-  }
+	System.exit(job.waitForCompletion(true) ? 0 : 1);
+	}
 }
