@@ -56,10 +56,10 @@ public class CommonFriend {
 			String [] sz = input[1].split(" ");
 			for (String string : sz) {
 				if(input[0].compareTo(string) < 0){
-					outKey.set("([" + input[0] + ", " + string + "]");
+					outKey.set("([" + input[0] + ", " + string + "],");
 				}
 				else {
-					outKey.set("([" + string + ", " + input[0] + "]");
+					outKey.set("([" + string + ", " + input[0] + "],");
 				}
 				context.write(outKey, outValue);
 			}
