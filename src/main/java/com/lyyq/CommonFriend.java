@@ -106,7 +106,7 @@ public class CommonFriend {
 			sb.append("]");
 			String substring = null;
 			if(sb.length() > 1){
-				substring = sb.substring(0, sb.length()-2);
+				substring = sb.substring(0, sb.length());
 			}
 			if(substring != null){
 				this.outValue.set(substring);
