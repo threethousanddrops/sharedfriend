@@ -90,7 +90,7 @@ public class CommonFriend {
 		  System.exit(2);
 		}
 		
-		Path TempPath = new Path("hdfs://lyyq181850099-master:9000/wordcount/FriendsTempOutput");
+		Path TempPath = new Path("hdfs://lyyq181850099-master:9000/sharedfriend/FriendsTempOutput");
 		FileSystem fs = FileSystem.get(conf);
 		Path outPath=new Path(otherArgs[otherArgs.length - 1]);
 		if (fs.exists(outPath)) {
@@ -115,7 +115,7 @@ public class CommonFriend {
 
 		Job job2=Job.getInstance(conf);
         //Job job2=new Job(conf,"job2");
-		FileInputFormat.addInputPath(job2,TempPath);
+		job2.setJarByClass(CommonFriend.class);
         job2.setMapperClass(MyMapper2.class);
         job2.setReducerClass(MyReduce2.class);
         job2.setMapOutputKeyClass(Text.class);
@@ -124,6 +124,7 @@ public class CommonFriend {
         job2.setOutputValueClass(Text.class);
         job2.setOutputFormatClass(TextOutputFormat.class);
         job2.setInputFormatClass(TextInputFormat.class);
+		FileInputFormat.addInputPath(job2,TempPath);
         FileOutputFormat.setOutputPath(job2,outPath);
 		job2.waitForCompletion(true); 
 		
