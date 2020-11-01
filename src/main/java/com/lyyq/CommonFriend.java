@@ -41,7 +41,7 @@ public class CommonFriend {
 				res1.append(val.toString()).append(",");
 			}
 			String outvalue=String.valueOf(res1);
-			outvalue=outvalue.substring(0, outvalue.length()-2);
+			outvalue=outvalue.substring(0, outvalue.length()-1);
 			context.write(key,new Text(outvalue));
 		}
 	}
@@ -79,7 +79,7 @@ public class CommonFriend {
 			}
 			//res = res.deleteCharAt(res.length()-1);
 			String outvalue=String.valueOf(res);
-			outvalue=outvalue.substring(0, outvalue.length()-2);
+			outvalue=outvalue.substring(0, outvalue.length()-1);
 			context.write(key,new Text("["+outvalue+"])")); 
 		}
 	}
