@@ -3,8 +3,6 @@
 代码编写以及运行环境：vscode（本地）+BDKIT
 
 运行web与output截图：
-![web](https://github.com/threethousanddrops/sharedfriend/blob/main/images/web.png)
-![output](https://github.com/threethousanddrops/sharedfriend/blob/main/images/output.png)
 
 
 实验设计思路：
