@@ -4,10 +4,11 @@ import java.io.IOException;
 import java.util.*; 
 
 import org.apache.hadoop.conf.Configuration; 
-import org.apache.hadoop.fs.Path; 
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text; 
 import org.apache.hadoop.mapreduce.Job; 
+import org.apache.hadoop.fs.FileSystem; 
+import org.apache.hadoop.fs.Path; 
+import org.apache.hadoop.io.Text; 
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat; 
@@ -15,48 +16,47 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat; 
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat; 
 import org.apache.hadoop.util.GenericOptionsParser;
-import org.apache.hadoop.fs.FileSystem; 
 
 
 public class CommonFriend {
 	public static class MyMapper1 extends Mapper <LongWritable,Text,Text,Text> {
 		
-		public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
-			String line=value.toString();
-			String[] person_friends=line.split(", ");     //3.0
-			String person=person_friends[0];
-			String[] friends=person_friends[1].split(" ");     //3.0
-			for (String friend:friends){
-				context.write(new Text(friend),new Text(person));
+		public void map(LongWritable key, Text value, Context context) 
+				throws IOException, InterruptedException {
+			String[] PrsnAndFrnd=value.toString().split(", ");   
+			String person=PrsnAndFrnd[0];
+			String[] friends=PrsnAndFrnd[1].split(" ");  
+			for (String f:friends){
+				context.write(new Text(f),new Text(person));
 			}
 		}
-	}
+	}//out 200/300... 100
 
     public static class MyReduce1 extends Reducer <Text,Text,Text,Text> {
 		
-		public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
-			StringBuffer bf= new StringBuffer();
+		public void reduce(Text key, Iterable<Text> values, Context context) 
+				throws IOException, InterruptedException {
+			StringBuffer res1= new StringBuffer();
 			for (Text friend:values){
-				bf.append(friend.toString()).append(",");
+				res1.append(friend.toString()).append(",");
 			}
-			bf=bf.deleteCharAt(bf.length()-1);
-			context.write(key,new Text(String.valueOf(bf)));
+			res1=res1.deleteCharAt(res1.length()-1);//cut out ","
+			context.write(key,new Text(String.valueOf(res1)));
 		}
 	}
 
 	
 	public static class MyMapper2 extends Mapper <LongWritable,Text,Text,Text> {
 		
-		public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
-			String line = value.toString();
-			String[] friend_persons = line.split("\t");
-			String friend = friend_persons[0];
-			String[] persons = friend_persons[1].split(",");
-			Arrays.sort(persons); //排序
-			//两两配对
-			for (int i=0;i<persons.length-1;i++){
-				for (int j=i+1;j<persons.length;j++){
-					context.write(new Text("(["+persons[i]+","+persons[j]+"],"),new Text(friend));   //2.0 改输出格式
+		public void map(LongWritable key, Text value, Context context) 
+				throws IOException, InterruptedException {
+			String[] PrsnAndFrnd = value.toString().split("\t");//...tried " "&"  "&"   " :(
+			String friend = PrsnAndFrnd[0];
+			String[] person = PrsnAndFrnd[1].split(",");
+			Arrays.sort(person);
+			for (int i=0;i<person.length-1;i++){
+				for (int j=i+1;j<person.length;j++){
+					context.write(new Text("(["+person[i]+","+person[j]+"], "),new Text(friend));   //2.0 改输出格式
 				}
 			}    
 		}
@@ -64,8 +64,9 @@ public class CommonFriend {
  
 	public static class MyReduce2 extends Reducer <Text,Text,Text,Text> {
 		
-		public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
-			StringBuffer bf=new StringBuffer();
+		public void reduce(Text key, Iterable<Text> values, Context context) 
+				throws IOException, InterruptedException {
+			StringBuffer res=new StringBuffer();
 			Set<String> set=new HashSet<>();
 			for (Text s:values){
 				if (!set.contains(s.toString())){
@@ -73,10 +74,10 @@ public class CommonFriend {
 				}
 			}
 			for (String s:set){
-				bf.append(s).append(",");
+				res.append(s).append(",");
 			}
-			bf = bf.deleteCharAt(bf.length()-1);
-			context.write(key,new Text("["+bf.toString()+"])"));    //2.0
+			res = res.deleteCharAt(res.length()-1);
+			context.write(key,new Text("["+res.toString()+"])")); 
 		}
 	}
 
@@ -114,7 +115,6 @@ public class CommonFriend {
 		job1.waitForCompletion(true); 
 
 		Job job2=Job.getInstance(conf);
-        //Job job2=new Job(conf,"job2");
 		job2.setJarByClass(CommonFriend.class);
         job2.setMapperClass(MyMapper2.class);
         job2.setReducerClass(MyReduce2.class);
@@ -123,12 +123,13 @@ public class CommonFriend {
         job2.setOutputKeyClass(Text.class);
         job2.setOutputValueClass(Text.class);
         job2.setOutputFormatClass(TextOutputFormat.class);
-        job2.setInputFormatClass(TextInputFormat.class);
+		job2.setInputFormatClass(TextInputFormat.class);
 		FileInputFormat.addInputPath(job2,TempPath);
         FileOutputFormat.setOutputPath(job2,outPath);
 		job2.waitForCompletion(true); 
 		
 		FileSystem.get(conf).delete(TempPath, true);  
-		System.exit(job1.waitForCompletion(true)?0:1);
+
+		System.exit(job2.waitForCompletion(true)?0:1);
     }
 }
