@@ -37,11 +37,12 @@ public class CommonFriend {
 		public void reduce(Text key, Iterable<Text> values, Context context) 
 				throws IOException, InterruptedException {
 			StringBuffer res1= new StringBuffer();
-			for (Text friend:values){
-				res1.append(friend.toString()).append(",");
+			for (Text val:values){
+				res1.append(val.toString()).append(",");
 			}
-			res1=res1.deleteCharAt(res1.length()-1);//cut out ","
-			context.write(key,new Text(String.valueOf(res1)));
+			String outvalue=String.valueOf(res1);
+			outvalue=outvalue.substring(0, outvalue.length()-2);
+			context.write(key,new Text(outvalue));
 		}
 	}
 
@@ -53,10 +54,10 @@ public class CommonFriend {
 			String[] PrsnAndFrnd = value.toString().split("\t");//...tried " "&"  "&"   " :(
 			String friend = PrsnAndFrnd[0];
 			String[] person = PrsnAndFrnd[1].split(",");
-			Arrays.sort(person);
+			Arrays.sort(person);//sort
 			for (int i=0;i<person.length-1;i++){
 				for (int j=i+1;j<person.length;j++){
-					context.write(new Text("(["+person[i]+","+person[j]+"], "),new Text(friend));   //2.0 改输出格式
+					context.write(new Text("(["+person[i]+","+person[j]+"],"),new Text(friend));   //2.0 改输出格式
 				}
 			}    
 		}
@@ -67,17 +68,19 @@ public class CommonFriend {
 		public void reduce(Text key, Iterable<Text> values, Context context) 
 				throws IOException, InterruptedException {
 			StringBuffer res=new StringBuffer();
-			Set<String> set=new HashSet<>();
-			for (Text s:values){
-				if (!set.contains(s.toString())){
-					set.add(s.toString());
+			Set<String> p=new HashSet<>();
+			for (Text v:values){
+				if (!p.contains(v.toString())){
+					p.add(v.toString());
 				}
 			}
-			for (String s:set){
+			for (String s:p){
 				res.append(s).append(",");
 			}
-			res = res.deleteCharAt(res.length()-1);
-			context.write(key,new Text("["+res.toString()+"])")); 
+			//res = res.deleteCharAt(res.length()-1);
+			String outvalue=String.valueOf(res);
+			outvalue=outvalue.substring(0, outvalue.length()-2);
+			context.write(key,new Text("["+outvalue+"])")); 
 		}
 	}
 
@@ -129,7 +132,6 @@ public class CommonFriend {
 		job2.waitForCompletion(true); 
 		
 		FileSystem.get(conf).delete(TempPath, true);  
-
 		System.exit(job2.waitForCompletion(true)?0:1);
     }
 }
